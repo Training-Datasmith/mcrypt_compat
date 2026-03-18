@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 class MCryptCompatTest extends PHPUnit\Framework\TestCase
 {
     public function testAlgorithmList()
@@ -38,7 +40,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
 
         $result = phpseclib_mcrypt_module_open('arcfour', '', 'cbc', '');
     }
-    
+
     /**
      * @dataProvider mcryptModuleNameProvider
      */
@@ -163,18 +165,18 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
         $td = phpseclib_mcrypt_module_open('blowfish', '', 'cbc', '');
         $result = phpseclib_mcrypt_enc_is_block_algorithm_mode($td);
         $this->assertTrue($result);
-        
+
         $td = phpseclib_mcrypt_module_open('arcfour', '', 'stream', '');
         $result = phpseclib_mcrypt_enc_is_block_algorithm_mode($td);
         $this->assertFalse($result);
     }
-    
+
     public function testMcryptEncIsBlockAlgorithm()
     {
         $td = phpseclib_mcrypt_module_open('blowfish', '', 'cbc', '');
         $result = phpseclib_mcrypt_enc_is_block_algorithm($td);
         $this->assertTrue($result);
-        
+
         $td = phpseclib_mcrypt_module_open('arcfour', '', 'stream', '');
         $result = phpseclib_mcrypt_enc_is_block_algorithm($td);
         $this->assertFalse($result);
@@ -185,11 +187,11 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
         $td = phpseclib_mcrypt_module_open('blowfish', '', 'cbc', '');
         $result = phpseclib_mcrypt_enc_is_block_mode($td);
         $this->assertTrue($result);
-        
+
         $td = phpseclib_mcrypt_module_open('blowfish', '', 'ecb', '');
         $result = phpseclib_mcrypt_enc_is_block_mode($td);
         $this->assertTrue($result);
-        
+
         $td = phpseclib_mcrypt_module_open('arcfour', '', 'stream', '');
         $result = phpseclib_mcrypt_enc_is_block_mode($td);
         $this->assertFalse($result);
@@ -352,7 +354,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     {
         $this->setExpectedException('PHPUnit_Framework_Error_Notice');
 
-        $params = array('fake-key' => 'fake-value');
+        $params = ['fake-key' => 'fake-value'];
         $filter = new phpseclib_mcrypt_filter();
         $filter->params = $params;
         $filter->onCreate();
@@ -362,7 +364,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     {
         $this->setExpectedException('PHPUnit_Framework_Error_Notice');
 
-        $params = array('iv' => 'fake-iv-str');
+        $params = ['iv' => 'fake-iv-str'];
         $filter = new phpseclib_mcrypt_filter();
         $filter->params = $params;
         $filter->onCreate();
@@ -372,7 +374,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     {
         $this->setExpectedException('PHPUnit_Framework_Error_Notice');
 
-        $params = array('iv' => 'fake-iv-str', 'key' => 'fake-key');
+        $params = ['iv' => 'fake-iv-str', 'key' => 'fake-key'];
         $filter = new phpseclib_mcrypt_filter();
         $filter->filtername = 'fake.filter.name';
         $filter->params = $params;
@@ -383,7 +385,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     {
         $this->setExpectedException('PHPUnit_Framework_Error_Notice');
 
-        $params = array('iv' => 'fake-iv-str', 'key' => 'fake-key');
+        $params = ['iv' => 'fake-iv-str', 'key' => 'fake-key'];
         $filter = new phpseclib_mcrypt_filter();
         $filter->filtername = 'fake_crypt.fake_cipher';
         $filter->params = $params;
@@ -394,7 +396,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     {
         $this->setExpectedException('PHPUnit_Framework_Error_Notice');
 
-        $params = array('iv' => 'fake-iv-str', 'key' => 'fake-key');
+        $params = ['iv' => 'fake-iv-str', 'key' => 'fake-key'];
         $filter = new phpseclib_mcrypt_filter();
         $filter->filtername = 'mcrypt.fake_cipher';
         $filter->params = $params;
@@ -475,17 +477,17 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     {
         $td = call_user_func($prefix . 'mcrypt_module_open', 'rijndael-128', '', 'ncfb', '');
         call_user_func($prefix . 'mcrypt_generic_init', $td, str_repeat('a', 16), str_repeat('a', 16));
-        $blocks = array(10, 5, 17, 16);
+        $blocks = [10, 5, 17, 16];
         $v1 = $v2 = '';
         foreach ($blocks as $block) {
-            $v1.= call_user_func($prefix . 'mdecrypt_generic', $td, str_repeat('c', $block));
-            $v2.= str_repeat('c', $block);
+            $v1 .= call_user_func($prefix . 'mdecrypt_generic', $td, str_repeat('c', $block));
+            $v2 .= str_repeat('c', $block);
         }
         ($prefix . 'mcrypt_generic_deinit')($td);
         call_user_func($prefix . 'mcrypt_generic_init', $td, str_repeat('a', 16), str_repeat('a', 16));
         $v2 = call_user_func($prefix . 'mdecrypt_generic', $td, $v2);
 
-        return array($v1, $v2);
+        return [$v1, $v2];
     }
 
     public function testMcryptNCFB()
@@ -627,7 +629,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
         $iv = substr(md5('iv' . $passphrase, true), 0, 8);
         $key = substr(md5('pass1' . $passphrase, true) .
                       md5('pass2' . $passphrase, true), 0, 24);
-        $opts = array('iv' => $iv, 'key' => $key);
+        $opts = ['iv' => $iv, 'key' => $key];
 
         $expected = substr($plaintext . $plaintext, 0, 48);
 
@@ -690,7 +692,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
 
         $iv = 'z';
         $key = 'z';
-        $opts = array('iv' => $iv, 'key' => $key);
+        $opts = ['iv' => $iv, 'key' => $key];
 
         $fp = fopen('php://memory', 'wb+');
         stream_filter_append($fp, 'mcrypt.tripledes', STREAM_FILTER_WRITE, $opts);
@@ -718,7 +720,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
 
         $key = 'ae6fa3da6ae39b05ce17e69d5e18c236a7341c80592626d81d7c70013b7d436d';
         $iv = '5dc7a17ebe32b6e62f0b5f9519d57afb';
-        $opts = array('iv' => $iv, 'key' => $key);
+        $opts = ['iv' => $iv, 'key' => $key];
 
         $filename = tempnam(sys_get_temp_dir(), 'phpseclib-test-');
 
@@ -904,14 +906,14 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
             [ 'ext', MCRYPT_3DES, MCRYPT_MODE_ECB, 'generic', 4, '44448888', 8, PHP_VERSION_ID >= 70000 ? false : 'Iv size incorrect; supplied length: 4, needed: 8' ],
         ];
         if (PHP_VERSION_ID >= 56000) {
-            $tests+= [
+            $tests += [
                 // the following produce errors in older versions of PHP but stopped as of PHP 5.6+
                 [ '', MCRYPT_ARCFOUR, MCRYPT_MODE_STREAM, 'decrypt', 4, '44448888', 0, false ],
                 [ '', MCRYPT_ARCFOUR, MCRYPT_MODE_STREAM, 'decrypt', 8, '44448888', 0, false ],
                 // the following produced an error with a different message before PHP 5.6. mcrypt_compat uses the
                 // PHP 5.6+ error messages.
                 [ '', MCRYPT_3DES, MCRYPT_MODE_CBC, 'decrypt', 0, '44448888', 8, 'initialization vector of size 0, but size 8 is required' ],
-                [ '', MCRYPT_3DES, MCRYPT_MODE_CBC, 'decrypt', 4, '44448888', 8, 'initialization vector of size 4, but size 8 is required' ]
+                [ '', MCRYPT_3DES, MCRYPT_MODE_CBC, 'decrypt', 4, '44448888', 8, 'initialization vector of size 4, but size 8 is required' ],
             ];
         }
 
@@ -1038,7 +1040,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
         $td = phpseclib_mcrypt_module_open('rijndael-256', '', 'ofb', '');
         phpseclib_mcrypt_generic_init($td, $key, $iv);
         $mcrypt = bin2hex(phpseclib_mcrypt_generic($td, substr($plaintext, 0, -1)));
-        $mcrypt.= bin2hex(phpseclib_mcrypt_generic($td, substr($plaintext, -1)));
+        $mcrypt .= bin2hex(phpseclib_mcrypt_generic($td, substr($plaintext, -1)));
 
         $this->assertEquals(
             $ciphertext,
@@ -1089,68 +1091,68 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
 
     public function mcryptModuleNameProvider()
     {
-        return array(
-            array('twofish', 'cbc', '\phpseclib3\Crypt\Twofish'),
-            array('rijndael-128', 'cbc', '\phpseclib3\Crypt\Rijndael'),
-            array('rijndael-192', 'cbc', '\phpseclib3\Crypt\Rijndael'),
-            array('des', 'cbc', '\phpseclib3\Crypt\DES'),
-            array('rijndael-256', 'cbc', '\phpseclib3\Crypt\Rijndael'),
-            array('blowfish', 'cbc', '\phpseclib3\Crypt\Blowfish'),
-            array('rc2', 'cbc', '\phpseclib3\Crypt\RC2'),
-            array('tripledes', 'cbc', '\phpseclib3\Crypt\TripleDES'),
-            array('arcfour', 'stream', '\phpseclib3\Crypt\RC4')
-        );
+        return [
+            ['twofish', 'cbc', '\phpseclib3\Crypt\Twofish'],
+            ['rijndael-128', 'cbc', '\phpseclib3\Crypt\Rijndael'],
+            ['rijndael-192', 'cbc', '\phpseclib3\Crypt\Rijndael'],
+            ['des', 'cbc', '\phpseclib3\Crypt\DES'],
+            ['rijndael-256', 'cbc', '\phpseclib3\Crypt\Rijndael'],
+            ['blowfish', 'cbc', '\phpseclib3\Crypt\Blowfish'],
+            ['rc2', 'cbc', '\phpseclib3\Crypt\RC2'],
+            ['tripledes', 'cbc', '\phpseclib3\Crypt\TripleDES'],
+            ['arcfour', 'stream', '\phpseclib3\Crypt\RC4'],
+        ];
     }
 
     public function mcryptEncGetAlgorithmsNameProvider()
     {
-        return array(
-            array('twofish', 'cbc', 'TWOFISH'),
-            array('rijndael-256', 'cbc', 'RIJNDAEL-'),
-            array('des', 'cbc', 'DES'),
-            array('blowfish', 'cbc', 'BLOWFISH'),
-            array('rc2', 'cbc', 'RC2'),
-            array('tripledes', 'cbc', 'TRIPLEDES'),
-            array('arcfour', 'stream', 'ARCFOUR')
-        );
+        return [
+            ['twofish', 'cbc', 'TWOFISH'],
+            ['rijndael-256', 'cbc', 'RIJNDAEL-'],
+            ['des', 'cbc', 'DES'],
+            ['blowfish', 'cbc', 'BLOWFISH'],
+            ['rc2', 'cbc', 'RC2'],
+            ['tripledes', 'cbc', 'TRIPLEDES'],
+            ['arcfour', 'stream', 'ARCFOUR'],
+        ];
     }
 
     public function mcryptBlockModuleNameProvider()
     {
-        return array(
-            array('cbc', true),
-            array('ctr', true),
-            array('ecb', true),
-            array('cfb', true),
-            array('ofb', true),
-            array('ncfb', true),
-            array('nofb', true),
-            array('invalid-mode', false)
-        );
+        return [
+            ['cbc', true],
+            ['ctr', true],
+            ['ecb', true],
+            ['cfb', true],
+            ['ofb', true],
+            ['ncfb', true],
+            ['nofb', true],
+            ['invalid-mode', false],
+        ];
     }
 
     public function mcryptBlockModuleAlgoNameProvider()
     {
-        return array(
-            array('rijndael-128', true),
-            array('twofish', true),
-            array('rijndael-192', true),
-            array('des', true),
-            array('rijndael-256', true),
-            array('blowfish', true),
-            array('rc2', true),
-            array('tripledes', true),
-            array('invalid-algorithm-name', false)
-        );
+        return [
+            ['rijndael-128', true],
+            ['twofish', true],
+            ['rijndael-192', true],
+            ['des', true],
+            ['rijndael-256', true],
+            ['blowfish', true],
+            ['rc2', true],
+            ['tripledes', true],
+            ['invalid-algorithm-name', false],
+        ];
     }
 
     public function mcryptModuleIsBlockModeProvider()
     {
-        return array(
-            array('cbc', true),
-            array('ecb', true),
-            array('invalid-mode-name', false)
-        );
+        return [
+            ['cbc', true],
+            ['ecb', true],
+            ['invalid-mode-name', false],
+        ];
     }
 
     public function setExpectedException($name, $message = null, $code = null)
