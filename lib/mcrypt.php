@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * mcrypt polyfill
  *
@@ -32,19 +31,17 @@ declare(strict_types=1);
  * @license   http://www.opensource.org/licenses/mit-license.html  MIT License
  * @link      http://phpseclib.sourceforge.net
  */
-
 use phpseclib3\Common\Functions\Strings;
 use phpseclib3\Crypt\Blowfish;
-use phpseclib3\Crypt\Common\SymmetricKey as Base;
+use phpseclib3\Crypt\Common\Symmetric_Key as Base;
 use phpseclib3\Crypt\DES;
 use phpseclib3\Crypt\Random;
 use phpseclib3\Crypt\RC2;
 use phpseclib3\Crypt\RC4;
 use phpseclib3\Crypt\Rijndael;
-use phpseclib3\Crypt\TripleDES;
+use phpseclib3\Crypt\Triple_Des;
 use phpseclib3\Crypt\Twofish;
-use phpseclib3\Exception\InsufficientSetupException;
-
+use phpseclib3\Exception\Insufficient_Setup_Exception;
 if (!defined('MCRYPT_MODE_ECB')) {
     /**#@+
      * mcrypt constants
@@ -58,13 +55,11 @@ if (!defined('MCRYPT_MODE_ECB')) {
     define('MCRYPT_MODE_OFB', 'ofb');
     define('MCRYPT_MODE_NOFB', 'nofb');
     define('MCRYPT_MODE_STREAM', 'stream');
-
     define('MCRYPT_ENCRYPT', 0);
     define('MCRYPT_DECRYPT', 1);
     define('MCRYPT_DEV_RANDOM', 0);
     define('MCRYPT_DEV_URANDOM', 1);
     define('MCRYPT_RAND', 2);
-
     // http://php.net/manual/en/mcrypt.ciphers.php
     define('MCRYPT_3DES', 'tripledes');
     define('MCRYPT_ARCFOUR_IV', 'arcfour-iv');
@@ -109,7 +104,6 @@ if (!defined('MCRYPT_MODE_ECB')) {
     define('MCRYPT_XTEA', 'xtea');
     /**#@-*/
 }
-
 if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     /**
      * Returns the string length
@@ -123,7 +117,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     {
         return Strings::is_stringable($string) ? strlen($string) : 0;
     }
-
     /**
      * Sets the key
      *
@@ -132,11 +125,9 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_set_key(Base $td, $key): void
     {
-        $length = $origLength = strlen($key);
-
+        $length = $orig_length = strlen($key);
         $reflection = new \ReflectionClass($td);
-
-        switch ($reflection->getShortName()) {
+        switch ($reflection->get_short_name()) {
             case 'TripleDES':
                 $length = 24;
                 break;
@@ -158,7 +149,7 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
                             $key .= $key;
                         }
                         $key = substr($key, 0, 6);
-                        $td->setKey($key);
+                        $td->set_key($key);
                         return;
                     case $length > 56:
                         $length = 56;
@@ -174,14 +165,11 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
                     $length = 256;
                 }
         }
-
-        if ($length != $origLength) {
-            $key = str_pad(substr($key, 0, $length), $length, "\0");
+        if ($length != $orig_length) {
+            $key = str_pad(substr($key, 0, $length), $length, "\x00");
         }
-
-        $td->setKey($key);
+        $td->set_key($key);
     }
-
     /**
      * Sets the IV
      *
@@ -190,13 +178,12 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_set_iv(Base $td, $iv): void
     {
-        if ($td->getMode() != 'ecb' && $td->getMode() != 'stream') {
-            $length = $td->getBlockLength() >> 3;
-            $iv = str_pad(substr(Strings::is_stringable($iv) ? $iv : '', 0, $length), $length, "\0");
-            $td->setIV($iv);
+        if ($td->get_mode() != 'ecb' && $td->get_mode() != 'stream') {
+            $length = $td->get_block_length() >> 3;
+            $iv = str_pad(substr(Strings::is_stringable($iv) ? $iv : '', 0, $length), $length, "\x00");
+            $td->set_iv($iv);
         }
     }
-
     /**
      * Gets an array of all supported ciphers.
      *
@@ -205,20 +192,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_list_algorithms($lib_dir = ''): array
     {
-        return [
-            'rijndael-128',
-            'twofish',
-            'rijndael-192',
-            'blowfish-compat',
-            'des',
-            'rijndael-256',
-            'blowfish',
-            'rc2',
-            'tripledes',
-            'arcfour',
-        ];
+        return ['rijndael-128', 'twofish', 'rijndael-192', 'blowfish-compat', 'des', 'rijndael-256', 'blowfish', 'rc2', 'tripledes', 'arcfour'];
     }
-
     /**
      * Gets an array of all supported modes
      *
@@ -227,18 +202,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_list_modes($lib_dir = ''): array
     {
-        return [
-            'cbc',
-            'cfb',
-            'ctr',
-            'ecb',
-            'ncfb',
-            'nofb',
-            'ofb',
-            'stream',
-        ];
+        return ['cbc', 'cfb', 'ctr', 'ecb', 'ncfb', 'nofb', 'ofb', 'stream'];
     }
-
     /**
      * Creates an initialization vector (IV) from a random source
      *
@@ -253,13 +218,12 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_create_iv($size, $source = MCRYPT_DEV_URANDOM)
     {
-        if ($size < 1 || $size > 0x7FFFFFFF) {
+        if ($size < 1 || $size > 0x7fffffff) {
             trigger_error('mcrypt_create_iv(): Cannot create an IV with a size of less than 1 or greater than 2147483647', E_USER_WARNING);
             return '';
         }
         return Random::string($size);
     }
-
     /**
      * Opens the module of the algorithm and the mode to be used
      *
@@ -274,20 +238,11 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      * @return object
      * @access public
      */
-    function phpseclib_mcrypt_module_open($algorithm, $algorithm_directory, $mode, $mode_directory): false|\phpseclib3\Crypt\RC4|\phpseclib3\Crypt\TripleDES|\phpseclib3\Crypt\RC2|\phpseclib3\Crypt\Blowfish|\phpseclib3\Crypt\Rijndael|\phpseclib3\Crypt\DES|\phpseclib3\Crypt\Twofish
+    function phpseclib_mcrypt_module_open($algorithm, $algorithm_directory, $mode, $mode_directory): false|\phpseclib3\Crypt\RC4|\phpseclib3\Crypt\Triple_Des|\phpseclib3\Crypt\RC2|\phpseclib3\Crypt\Blowfish|\phpseclib3\Crypt\Rijndael|\phpseclib3\Crypt\DES|\phpseclib3\Crypt\Twofish
     {
-        $modeMap = [
-            'ctr' => 'ctr',
-            'ecb' => 'ecb',
-            'cbc' => 'cbc',
-            'cfb' => 'cfb8',
-            'ofb' => 'ofb8',
-            'ncfb' => 'cfb',
-            'nofb' => 'ofb',
-            'stream' => 'stream',
-        ];
+        $mode_map = ['ctr' => 'ctr', 'ecb' => 'ecb', 'cbc' => 'cbc', 'cfb' => 'cfb8', 'ofb' => 'ofb8', 'ncfb' => 'cfb', 'nofb' => 'ofb', 'stream' => 'stream'];
         switch (true) {
-            case !isset($modeMap[$mode]):
+            case !isset($mode_map[$mode]):
             case $mode == 'stream' && $algorithm != 'arcfour':
             case $algorithm == 'arcfour' && $mode != 'stream':
                 trigger_error('mcrypt_module_open(): Could not open encryption module', E_USER_WARNING);
@@ -295,31 +250,31 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         }
         switch ($algorithm) {
             case 'rijndael-128':
-                $cipher = new Rijndael($modeMap[$mode]);
-                $cipher->setBlockLength(128);
+                $cipher = new Rijndael($mode_map[$mode]);
+                $cipher->set_block_length(128);
                 break;
             case 'twofish':
-                $cipher = new Twofish($modeMap[$mode]);
+                $cipher = new Twofish($mode_map[$mode]);
                 break;
             case 'rijndael-192':
-                $cipher = new Rijndael($modeMap[$mode]);
-                $cipher->setBlockLength(192);
+                $cipher = new Rijndael($mode_map[$mode]);
+                $cipher->set_block_length(192);
                 break;
             case 'des':
-                $cipher = new DES($modeMap[$mode]);
+                $cipher = new DES($mode_map[$mode]);
                 break;
             case 'rijndael-256':
-                $cipher = new Rijndael($modeMap[$mode]);
-                $cipher->setBlockLength(256);
+                $cipher = new Rijndael($mode_map[$mode]);
+                $cipher->set_block_length(256);
                 break;
             case 'blowfish':
-                $cipher = new Blowfish($modeMap[$mode]);
+                $cipher = new Blowfish($mode_map[$mode]);
                 break;
             case 'rc2':
-                $cipher = new RC2($modeMap[$mode]);
+                $cipher = new RC2($mode_map[$mode]);
                 break;
             case 'tripledes':
-                $cipher = new TripleDES($modeMap[$mode]);
+                $cipher = new Triple_Des($mode_map[$mode]);
                 break;
             case 'arcfour':
                 $cipher = new RC4();
@@ -328,12 +283,9 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
                 trigger_error('mcrypt_module_open(): Could not open encryption module', E_USER_WARNING);
                 return false;
         }
-
-        $cipher->disablePadding();
-
+        $cipher->disable_padding();
         return $cipher;
     }
-
     /**
      * Returns the maximum supported keysize of the opened mode
      *
@@ -346,10 +298,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     {
         // invalid parameters with mcrypt result in warning's. type hinting, as this function is doing,
         // produces a catchable fatal error.
-
         $reflection = new \ReflectionClass($td);
-
-        switch ($reflection->getShortName()) {
+        switch ($reflection->get_short_name()) {
             case 'Rijndael':
             case 'Twofish':
                 return 32;
@@ -365,13 +315,12 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
                 return 128;
         }
     }
-
     /**
-      * Gets the name of the specified cipher
-      *
-      * @param string $cipher
-      * @access public
-      */
+     * Gets the name of the specified cipher
+     *
+     * @param string $cipher
+     * @access public
+     */
     function phpseclib_mcrypt_get_cipher_name($cipher): string|false
     {
         return match ($cipher) {
@@ -387,15 +336,14 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             default => false,
         };
     }
-
     /**
-      * Gets the block size of the specified cipher
-      *
-      * @param string $cipher
-      * @param string $mode optional
-      * @return int
-      * @access public
-      */
+     * Gets the block size of the specified cipher
+     *
+     * @param string $cipher
+     * @param string $mode optional
+     * @return int
+     * @access public
+     */
     function phpseclib_mcrypt_get_block_size($cipher, $mode = false)
     {
         if (!$mode) {
@@ -408,15 +356,14 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         }
         return phpseclib_mcrypt_enc_get_block_size($td);
     }
-
     /**
-      * Gets the key size of the specified cipher
-      *
-      * @param string $cipher
-      * @param string $mode optional
-      * @return int
-      * @access public
-      */
+     * Gets the key size of the specified cipher
+     *
+     * @param string $cipher
+     * @param string $mode optional
+     * @return int
+     * @access public
+     */
     function phpseclib_mcrypt_get_key_size($cipher, $mode = false)
     {
         if (!$mode) {
@@ -429,15 +376,14 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         }
         return phpseclib_mcrypt_enc_get_key_size($td);
     }
-
     /**
-      * Returns the size of the IV belonging to a specific cipher/mode combination
-      *
-      * @param string $cipher
-      * @param string $mode
-      * @return int
-      * @access public
-      */
+     * Returns the size of the IV belonging to a specific cipher/mode combination
+     *
+     * @param string $cipher
+     * @param string $mode
+     * @return int
+     * @access public
+     */
     function phpseclib_mcrypt_get_iv_size($cipher, $mode)
     {
         $td = @phpseclib_mcrypt_module_open($cipher, '', $mode, '');
@@ -447,7 +393,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         }
         return phpseclib_mcrypt_enc_get_iv_size($td);
     }
-
     /**
      * Returns the maximum supported keysize of the opened mode
      *
@@ -468,7 +413,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         }
         return phpseclib_mcrypt_enc_get_key_size($td);
     }
-
     /**
      * Returns the size of the IV of the opened algorithm
      *
@@ -481,9 +425,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_enc_get_iv_size(Base $td): int|float
     {
-        return $td->getBlockLength() >> 3;
+        return $td->get_block_length() >> 3;
     }
-
     /**
      * Returns the blocksize of the opened algorithm
      *
@@ -494,9 +437,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_enc_get_block_size(Base $td): int|float
     {
-        return $td->getBlockLength() >> 3;
+        return $td->get_block_length() >> 3;
     }
-
     /**
      * Returns the blocksize of the specified algorithm
      *
@@ -514,9 +456,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         if ($td === false) {
             return -1;
         }
-        return $td->getBlockLength() >> 3;
+        return $td->get_block_length() >> 3;
     }
-
     /**
      * Returns the name of the opened algorithm
      *
@@ -527,9 +468,9 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_enc_get_algorithms_name(Base $td)
     {
-        $reflection = new \ReflectionObject($td);
-        return match ($reflection->getShortName()) {
-            'Rijndael' => 'RIJNDAEL-' . $td->getBlockLength(),
+        $reflection = new \Reflection_Object($td);
+        return match ($reflection->get_short_name()) {
+            'Rijndael' => 'RIJNDAEL-' . $td->get_block_length(),
             'Twofish' => 'TWOFISH',
             'Blowfish' => 'BLOWFISH',
             'DES' => 'DES',
@@ -539,7 +480,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             default => false,
         };
     }
-
     /**
      * Returns the name of the opened mode
      *
@@ -549,14 +489,13 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_enc_get_modes_name(Base $td): string
     {
-        $mode = $td->getMode();
+        $mode = $td->get_mode();
         return match ($mode) {
             'cfb', 'ofb' => 'n' . strtoupper($mode),
             'cfb8', 'ofb8' => strtoupper(substr($mode, 0, 3)),
             default => strtoupper($mode),
         };
     }
-
     /**
      * Checks whether the encryption of the opened mode works on blocks
      *
@@ -566,9 +505,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_enc_is_block_algorithm_mode(Base $td): bool
     {
-        return $td->getMode() != 'stream';
+        return $td->get_mode() != 'stream';
     }
-
     /**
      * Checks whether the algorithm of the opened mode is a block algorithm
      *
@@ -580,7 +518,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     {
         return phpseclib_mcrypt_enc_get_algorithms_name($td) != 'ARCFOUR';
     }
-
     /**
      * Checks whether the opened mode outputs blocks
      *
@@ -590,12 +527,11 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_enc_is_block_mode(Base $td): bool
     {
-        if ($td->getMode() == 'ecb') {
+        if ($td->get_mode() == 'ecb') {
             return true;
         }
-        return $td->getMode() == 'cbc';
+        return $td->get_mode() == 'cbc';
     }
-
     /**
      * Runs a self test on the opened module
      *
@@ -607,7 +543,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     {
         return true;
     }
-
     /**
      * This function initializes all buffers needed for en/decryption.
      *
@@ -618,7 +553,7 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     function phpseclib_mcrypt_generic_init(Base $td, $key, $iv): int
     {
         $iv_size = phpseclib_mcrypt_enc_get_iv_size($td);
-        if (phpseclib_strlen($iv) != $iv_size && $td->getMode() != 'ecb') {
+        if (phpseclib_strlen($iv) != $iv_size && $td->get_mode() != 'ecb') {
             trigger_error('mcrypt_generic_init(): Iv size incorrect; supplied length: ' . phpseclib_strlen($iv) . ', needed: ' . $iv_size, E_USER_WARNING);
         }
         if (!phpseclib_strlen($key)) {
@@ -631,12 +566,9 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         }
         phpseclib_set_key($td, $key);
         phpseclib_set_iv($td, $iv);
-
-        $td->enableContinuousBuffer();
-
+        $td->enable_continuous_buffer();
         return 0;
     }
-
     /**
      * Encrypt / decrypt data
      *
@@ -652,13 +584,12 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             $block_length = phpseclib_mcrypt_enc_get_iv_size($td);
             $extra = strlen($data) % $block_length;
             if ($extra) {
-                $data .= str_repeat("\0", $block_length - $extra);
+                $data .= str_repeat("\x00", $block_length - $extra);
             }
         }
-
         try {
             return $op == 'crypt' ? $td->encrypt($data) : $td->decrypt($data);
-        } catch (InsufficientSetupException) {
+        } catch (Insufficient_Setup_Exception) {
             // in the orig mcrypt, if mcrypt_generic_init() was called and an empty key was provided you'd get the following error:
             // Warning: mcrypt_generic(): supplied resource is not a valid MCrypt resource
             // that error doesn't really make a lot of sense in this context since $td is not a resource nor should it be one.
@@ -667,7 +598,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             return false;
         }
     }
-
     /**
      * This function encrypts data
      *
@@ -695,7 +625,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     {
         return phpseclib_mcrypt_generic_helper($td, $data, 'crypt');
     }
-
     /**
      * Decrypts data
      *
@@ -710,7 +639,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     {
         return phpseclib_mcrypt_generic_helper($td, $data, 'decrypt');
     }
-
     /**
      * This function terminates encryption
      *
@@ -722,10 +650,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     function phpseclib_mcrypt_generic_end(Base $td)
     {
         // https://web.archive.org/web/20180106174656/https://www.php.net/manual/en/function.mcrypt-generic-end.php
-
         return phpseclib_mcrypt_generic_deinit($td);
     }
-
     /**
      * This function deinitializes an encryption module
      *
@@ -738,18 +664,17 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_generic_deinit(Base &$td): bool
     {
-        $reflectionObject = new \ReflectionObject($td);
-        $reflectionProperty = $reflectionObject->getProperty('key'); // can be dropped in PHP 8.1.0+
-        if (!strlen((string) $reflectionProperty->getValue($td))) {
+        $reflection_object = new \Reflection_Object($td);
+        $reflection_property = $reflection_object->get_property('key');
+        // can be dropped in PHP 8.1.0+
+        if (!strlen((string) $reflection_property->get_value($td))) {
             trigger_error('mcrypt_generic_deinit(): Could not terminate encryption specifier', E_USER_WARNING);
             return false;
         }
-
         $class = $td::class;
-        $td = new $class($td->getMode());
+        $td = new $class($td->get_mode());
         return true;
     }
-
     /**
      * Closes the mcrypt module
      *
@@ -762,7 +687,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         //$td->key = null;
         return true;
     }
-
     /**
      * Returns an array with the supported keysizes of the opened algorithm
      *
@@ -783,7 +707,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             default => [],
         };
     }
-
     /**
      * Returns an array with the supported keysizes of the opened algorithm
      *
@@ -797,7 +720,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         $algorithm = strtolower(phpseclib_mcrypt_enc_get_algorithms_name($td));
         return phpseclib_mcrypt_module_get_supported_key_sizes($algorithm);
     }
-
     /**
      * Returns if the specified module is a block algorithm or not
      *
@@ -815,7 +737,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             default => false,
         };
     }
-
     /**
      * This function checks whether the specified algorithm is a block algorithm
      *
@@ -833,7 +754,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             default => false,
         };
     }
-
     /**
      * Returns if the specified mode outputs blocks or not
      *
@@ -851,7 +771,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             default => false,
         };
     }
-
     /**
      * Returns if the specified mode can use an IV or not
      *
@@ -866,7 +785,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             default => true,
         };
     }
-
     /**
      * This function runs a self test on the specified module
      *
@@ -880,7 +798,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     {
         return in_array($algorithm, phpseclib_mcrypt_list_algorithms());
     }
-
     /**
      * Encrypt / decrypt data using pre PHP 5.6.0 behavior
      *
@@ -898,21 +815,14 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     {
         $td = @phpseclib_mcrypt_module_open($cipher, '', $mode, '');
         phpseclib_set_key($td, $key);
-
         $iv_size = phpseclib_mcrypt_enc_get_iv_size($td);
         if ($iv_size && phpseclib_mcrypt_module_is_iv_mode($mode)) {
             if (!isset($iv)) {
-                trigger_error(
-                    'mcrypt_' . $op . '(): Attempt to use an empty IV, which is NOT recommended',
-                    E_USER_WARNING
-                );
-                $iv = str_repeat("\0", $iv_size);
+                trigger_error('mcrypt_' . $op . '(): Attempt to use an empty IV, which is NOT recommended', E_USER_WARNING);
+                $iv = str_repeat("\x00", $iv_size);
             } elseif (strlen($iv) != $iv_size) {
-                trigger_error(
-                    'mcrypt_' . $op . '(): The IV parameter must be as long as the blocksize',
-                    E_USER_WARNING
-                );
-                $iv = str_repeat("\0", $iv_size);
+                trigger_error('mcrypt_' . $op . '(): The IV parameter must be as long as the blocksize', E_USER_WARNING);
+                $iv = str_repeat("\x00", $iv_size);
             }
         } else {
             $iv = null;
@@ -920,7 +830,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         phpseclib_mcrypt_generic_init($td, $key, $iv);
         return $op == 'encrypt' ? phpseclib_mcrypt_generic($td, $data) : phpseclib_mdecrypt_generic($td, $data);
     }
-
     /**
      * Encrypt / decrypt data
      *
@@ -939,14 +848,10 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         // PHP 5.6 made mcrypt_encrypt() a lot less tolerant of bad input but it neglected to change
         // anything about mcrypt_generic(). and despite the changes insufficiently long plaintext
         // is still accepted.
-        $keyLen = strlen($key);
+        $key_len = strlen($key);
         $sizes = phpseclib_mcrypt_module_get_supported_key_sizes($cipher);
-        if (count($sizes) && !in_array($keyLen, $sizes)) {
-            trigger_error(
-                'mcrypt_' . $op . '(): Key of size ' . $keyLen . ' not supported by this algorithm. Only keys of sizes ' .
-                preg_replace('#, (\d+)$#', ' or $1', implode(', ', $sizes)) . ' supported',
-                E_USER_WARNING
-            );
+        if (count($sizes) && !in_array($key_len, $sizes)) {
+            trigger_error('mcrypt_' . $op . '(): Key of size ' . $key_len . ' not supported by this algorithm. Only keys of sizes ' . preg_replace('#, (\d+)$#', ' or $1', implode(', ', $sizes)) . ' supported', E_USER_WARNING);
             return false;
         }
         $td = @phpseclib_mcrypt_module_open($cipher, '', $mode, '');
@@ -954,28 +859,19 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
             trigger_error('mcrypt_encrypt(): Module initialization failed', E_USER_WARNING);
             return false;
         }
-        $maxKeySize = phpseclib_mcrypt_enc_get_key_size($td);
-        if (!count($sizes) && $keyLen > $maxKeySize) {
-            trigger_error(
-                'mcrypt_' . $op . '(): Key of size ' . $keyLen . ' not supported by this algorithm. Only keys of size 1 to ' . $maxKeySize . ' supported',
-                E_USER_WARNING
-            );
+        $max_key_size = phpseclib_mcrypt_enc_get_key_size($td);
+        if (!count($sizes) && $key_len > $max_key_size) {
+            trigger_error('mcrypt_' . $op . '(): Key of size ' . $key_len . ' not supported by this algorithm. Only keys of size 1 to ' . $max_key_size . ' supported', E_USER_WARNING);
             return false;
         }
         if (phpseclib_mcrypt_module_is_iv_mode($mode)) {
             $iv_size = phpseclib_mcrypt_enc_get_iv_size($td);
             if (!isset($iv) && $iv_size) {
-                trigger_error(
-                    'mcrypt_' . $op . '(): Encryption mode requires an initialization vector of size ' . $iv_size,
-                    E_USER_WARNING
-                );
+                trigger_error('mcrypt_' . $op . '(): Encryption mode requires an initialization vector of size ' . $iv_size, E_USER_WARNING);
                 return false;
             }
             if (strlen($iv) != $iv_size) {
-                trigger_error(
-                    'mcrypt_' . $op . '(): Received initialization vector of size ' . strlen($iv) . ', but size ' . $iv_size . ' is required for this encryption mode',
-                    E_USER_WARNING
-                );
+                trigger_error('mcrypt_' . $op . '(): Received initialization vector of size ' . strlen($iv) . ', but size ' . $iv_size . ' is required for this encryption mode', E_USER_WARNING);
                 return false;
             }
         } else {
@@ -984,7 +880,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         phpseclib_mcrypt_generic_init($td, $key, $iv);
         return $op == 'encrypt' ? phpseclib_mcrypt_generic($td, $data) : phpseclib_mdecrypt_generic($td, $data);
     }
-
     /**
      * Encrypts/decrypts data in CFB mode
      *
@@ -999,11 +894,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     function phpseclib_mcrypt_cfb($cipher, $key, $data, $mode, $iv = null)
     {
         // https://web.archive.org/web/20180106174656/https://www.php.net/manual/en/function.mcrypt-cfb.php
-        return $mode == MCRYPT_ENCRYPT ?
-            phpseclib_mcrypt_encrypt($cipher, $key, $data, MCRYPT_MODE_CFB, $iv) :
-            phpseclib_mcrypt_decrypt($cipher, $key, $data, MCRYPT_MODE_CFB, $iv);
+        return $mode == MCRYPT_ENCRYPT ? phpseclib_mcrypt_encrypt($cipher, $key, $data, MCRYPT_MODE_CFB, $iv) : phpseclib_mcrypt_decrypt($cipher, $key, $data, MCRYPT_MODE_CFB, $iv);
     }
-
     /**
      * Encrypts/decrypts data in OFB mode
      *
@@ -1018,11 +910,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     function phpseclib_mcrypt_ofb($cipher, $key, $data, $mode, $iv = null)
     {
         // https://web.archive.org/web/20180106174656/https://www.php.net/manual/en/function.mcrypt-ofb.php
-        return $mode == MCRYPT_ENCRYPT ?
-            phpseclib_mcrypt_encrypt($cipher, $key, $data, MCRYPT_MODE_OFB, $iv) :
-            phpseclib_mcrypt_decrypt($cipher, $key, $data, MCRYPT_MODE_OFB, $iv);
+        return $mode == MCRYPT_ENCRYPT ? phpseclib_mcrypt_encrypt($cipher, $key, $data, MCRYPT_MODE_OFB, $iv) : phpseclib_mcrypt_decrypt($cipher, $key, $data, MCRYPT_MODE_OFB, $iv);
     }
-
     /**
      * Encrypts/decrypts data in CBC mode
      *
@@ -1037,11 +926,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     function phpseclib_mcrypt_cbc($cipher, $key, $data, $mode, $iv = null)
     {
         // https://web.archive.org/web/20180106174656/https://www.php.net/manual/en/function.mcrypt-cbc.php
-        return $mode == MCRYPT_ENCRYPT ?
-            phpseclib_mcrypt_encrypt($cipher, $key, $data, MCRYPT_MODE_CBC, $iv) :
-            phpseclib_mcrypt_decrypt($cipher, $key, $data, MCRYPT_MODE_CBC, $iv);
+        return $mode == MCRYPT_ENCRYPT ? phpseclib_mcrypt_encrypt($cipher, $key, $data, MCRYPT_MODE_CBC, $iv) : phpseclib_mcrypt_decrypt($cipher, $key, $data, MCRYPT_MODE_CBC, $iv);
     }
-
     /**
      * Encrypts/decrypts data in ECB mode
      *
@@ -1057,13 +943,9 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
     {
         // idk why mcrypt_ecb had an $iv parameter when ECB mode doesn't use an IV
         // but whatever
-
         // https://web.archive.org/web/20180106174656/https://www.php.net/manual/en/function.mcrypt-ecb.php
-        return $mode == MCRYPT_ENCRYPT ?
-            phpseclib_mcrypt_encrypt($cipher, $key, $data, MCRYPT_MODE_ECB, $iv) :
-            phpseclib_mcrypt_decrypt($cipher, $key, $data, MCRYPT_MODE_ECB, $iv);
+        return $mode == MCRYPT_ENCRYPT ? phpseclib_mcrypt_encrypt($cipher, $key, $data, MCRYPT_MODE_ECB, $iv) : phpseclib_mcrypt_decrypt($cipher, $key, $data, MCRYPT_MODE_ECB, $iv);
     }
-
     /**
      * Encrypts plaintext with given parameters
      *
@@ -1079,11 +961,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_encrypt($cipher, $key, $data, $mode, $iv = null)
     {
-        return !defined('PHPSECLIB_MCRYPT_TARGET_VERSION') || version_compare(PHPSECLIB_MCRYPT_TARGET_VERSION, '5.6.0', '>=') ?
-               phpseclib_mcrypt_helper($cipher, $key, $data, $mode, $iv, 'encrypt') :
-               phpseclib_mcrypt_helper_old($cipher, $key, $data, $mode, $iv, 'encrypt');
+        return !defined('PHPSECLIB_MCRYPT_TARGET_VERSION') || version_compare(PHPSECLIB_MCRYPT_TARGET_VERSION, '5.6.0', '>=') ? phpseclib_mcrypt_helper($cipher, $key, $data, $mode, $iv, 'encrypt') : phpseclib_mcrypt_helper_old($cipher, $key, $data, $mode, $iv, 'encrypt');
     }
-
     /**
      * Decrypts crypttext with given parameters
      *
@@ -1099,11 +978,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
      */
     function phpseclib_mcrypt_decrypt($cipher, $key, $data, $mode, $iv = null)
     {
-        return !defined('PHPSECLIB_MCRYPT_TARGET_VERSION') || version_compare(PHPSECLIB_MCRYPT_TARGET_VERSION, '5.6.0', '>=') ?
-               phpseclib_mcrypt_helper($cipher, $key, $data, $mode, $iv, 'decrypt') :
-               phpseclib_mcrypt_helper_old($cipher, $key, $data, $mode, $iv, 'decrypt');
+        return !defined('PHPSECLIB_MCRYPT_TARGET_VERSION') || version_compare(PHPSECLIB_MCRYPT_TARGET_VERSION, '5.6.0', '>=') ? phpseclib_mcrypt_helper($cipher, $key, $data, $mode, $iv, 'decrypt') : phpseclib_mcrypt_helper_old($cipher, $key, $data, $mode, $iv, 'decrypt');
     }
-
     /**
      * mcrypt_compat stream filter
      *
@@ -1119,21 +995,18 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
          * @access private
          */
         private $cipher;
-
         /**
          * To encrypt or decrypt
          *
          * @access private
          */
         private ?bool $op = null;
-
         /**
          * Buffer for ECB / CBC
          *
          * @access private
          */
         private string $buffer = '';
-
         /**
          * Cipher block length
          *
@@ -1141,7 +1014,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
          * @access private
          */
         private $block_length;
-
         /**
          * Cipher block mode
          *
@@ -1149,7 +1021,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
          * @access private
          */
         private $block_mode;
-
         /**
          * Buffer handle
          *
@@ -1157,7 +1028,6 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
          * @access private
          */
         private $bh;
-
         /**
          * Called when applying the filter
          *
@@ -1172,7 +1042,7 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
          * @return int
          * @access public
          */
-        #[\ReturnTypeWillChange]
+        #[\Return_Type_Will_Change]
         public function filter($in, $out, &$consumed, $closing)
         {
             $newlen = 0;
@@ -1190,31 +1060,22 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
                         continue;
                     }
                 }
-
-                $bucket->data = $this->op ?
-                    $this->cipher->encrypt($bucket->data) :
-                    $this->cipher->decrypt($bucket->data);
+                $bucket->data = $this->op ? $this->cipher->encrypt($bucket->data) : $this->cipher->decrypt($bucket->data);
                 $newlen += strlen($bucket->data);
                 $consumed += $bucket->datalen;
-
                 stream_bucket_append($out, $bucket);
             }
-
             if ($closing && strlen($this->buffer)) {
-                $temp = $this->buffer . str_repeat("\0", $this->block_length - strlen($this->buffer));
-                $data = $this->op ?
-                    $this->cipher->encrypt($temp) :
-                    $this->cipher->decrypt($temp);
+                $temp = $this->buffer . str_repeat("\x00", $this->block_length - strlen($this->buffer));
+                $data = $this->op ? $this->cipher->encrypt($temp) : $this->cipher->decrypt($temp);
                 $newlen += strlen((string) $data);
                 $bucket = stream_bucket_new($this->bh, $data);
                 $this->buffer = '';
                 $newlen = 0;
                 stream_bucket_append($out, $bucket);
             }
-
             return $this->block_mode && $newlen && $newlen < $this->block_length ? PSFS_FEED_ME : PSFS_PASS_ON;
         }
-
         /**
          * Called when creating the filter
          *
@@ -1226,8 +1087,8 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
          * @return bool
          * @access public
          */
-        #[\ReturnTypeWillChange]
-        public function onCreate()
+        #[\Return_Type_Will_Change]
+        public function on_create()
         {
             if (!isset($this->params) || !is_array($this->params)) {
                 trigger_error('stream_filter_append(): Filter parameters for ' . $this->filtername . ' must be an array');
@@ -1241,9 +1102,7 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
                 trigger_error('stream_filter_append(): key not specified or is not a string');
                 return false;
             }
-            $filtername = str_starts_with($this->filtername, 'phpseclib.') ?
-                substr($this->filtername, 10) :
-                $this->filtername;
+            $filtername = str_starts_with($this->filtername, 'phpseclib.') ? substr($this->filtername, 10) : $this->filtername;
             $parts = explode('.', $filtername);
             if (count($parts) != 2) {
                 trigger_error('stream_filter_append(): Could not open encryption module');
@@ -1263,23 +1122,18 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
                 trigger_error('stream_filter_append(): Could not open encryption module');
                 return false;
             }
-
-            $cipher->enableContinuousBuffer();
+            $cipher->enable_continuous_buffer();
             phpseclib_set_key($cipher, $this->params['key']);
             phpseclib_set_iv($cipher, $this->params['iv']);
-
             $this->op = $parts[0] == 'mcrypt';
             $this->cipher = $cipher;
             $this->block_length = phpseclib_mcrypt_enc_get_iv_size($cipher);
             $this->block_mode = phpseclib_mcrypt_module_is_block_mode($mode);
-
             if ($this->block_mode) {
                 $this->bh = fopen('php://memory', 'w+');
             }
-
             return true;
         }
-
         /**
          * Called when closing the filter
          *
@@ -1290,203 +1144,165 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
          * @link http://php.net/manual/en/php-user-filter.onclose.php
          * @access public
          */
-        #[\ReturnTypeWillChange]
-        public function onClose(): void
+        #[\Return_Type_Will_Change]
+        public function on_close(): void
         {
             if ($this->bh) {
                 fclose($this->bh);
             }
         }
     }
-
     stream_filter_register('phpseclib.mcrypt.*', 'phpseclib_mcrypt_filter');
     stream_filter_register('phpseclib.mdecrypt.*', 'phpseclib_mcrypt_filter');
 }
-
 // define
 if (!function_exists('mcrypt_list_algorithms')) {
     if (defined('PHPSECLIB_MCRYPT_TARGET_VERSION') && version_compare(PHPSECLIB_MCRYPT_TARGET_VERSION, '7.0.0', '<')) {
-        function mcrypt_generic_end(\phpseclib3\Crypt\Common\SymmetricKey $td)
+        function mcrypt_generic_end(\phpseclib3\Crypt\Common\Symmetric_Key $td)
         {
             return phpseclib_mcrypt_generic_end($td);
         }
-
         function mcrypt_ecb($cipher, $key, $data, $mode, $iv = null)
         {
             return phpseclib_mcrypt_ecb($cipher, $key, $data, $mode, $iv);
         }
-
         function mcrypt_cbc($cipher, $key, $data, $mode, $iv = null)
         {
             return phpseclib_mcrypt_cbc($cipher, $key, $data, $mode, $iv);
         }
-
         function mcrypt_cfb($cipher, $key, $data, $mode, $iv = null)
         {
             return phpseclib_mcrypt_cfb($cipher, $key, $data, $mode, $iv);
         }
-
         function mcrypt_ofb($cipher, $key, $data, $mode, $iv = null)
         {
             return phpseclib_mcrypt_ofb($cipher, $key, $data, $mode, $iv);
         }
     }
-
     function mcrypt_list_algorithms($lib_dir = '')
     {
         return phpseclib_mcrypt_list_algorithms($lib_dir);
     }
-
     function mcrypt_list_modes($lib_dir = '')
     {
         return phpseclib_mcrypt_list_modes($lib_dir);
     }
-
     function mcrypt_create_iv($size, $source = MCRYPT_DEV_URANDOM)
     {
         return phpseclib_mcrypt_create_iv($size, $source);
     }
-
     function mcrypt_module_open($algorithm, $algorithm_directory, $mode, $mode_directory)
     {
         return phpseclib_mcrypt_module_open($algorithm, $algorithm_directory, $mode, $mode_directory);
     }
-
     function mcrypt_enc_get_key_size(Base $td)
     {
         return phpseclib_mcrypt_enc_get_key_size($td);
     }
-
     function mcrypt_enc_get_iv_size(Base $td)
     {
         return phpseclib_mcrypt_enc_get_iv_size($td);
     }
-
     function mcrypt_enc_get_block_size(Base $td)
     {
         return phpseclib_mcrypt_enc_get_block_size($td);
     }
-
     function mcrypt_generic_init(Base $td, $key, $iv)
     {
         return phpseclib_mcrypt_generic_init($td, $key, $iv);
     }
-
     function mcrypt_generic(Base $td, $data)
     {
         return phpseclib_mcrypt_generic($td, $data);
     }
-
     function mcrypt_generic_deinit(Base &$td)
     {
         return phpseclib_mcrypt_generic_deinit($td);
     }
-
     function mcrypt_module_close(Base $td)
     {
         return phpseclib_mcrypt_module_close($td);
     }
-
     function mdecrypt_generic(Base $td, $data)
     {
         return phpseclib_mdecrypt_generic($td, $data);
     }
-
     function mcrypt_enc_get_algorithms_name(Base $td)
     {
         return phpseclib_mcrypt_enc_get_algorithms_name($td);
     }
-
     function mcrypt_enc_get_modes_name(Base $td)
     {
         return phpseclib_mcrypt_enc_get_modes_name($td);
     }
-
     function mcrypt_enc_is_block_algorithm_mode(Base $td)
     {
         return phpseclib_mcrypt_enc_is_block_algorithm_mode($td);
     }
-
     function mcrypt_enc_is_block_algorithm(Base $td)
     {
         return phpseclib_mcrypt_enc_is_block_algorithm($td);
     }
-
     function mcrypt_enc_self_test(Base $td)
     {
         return phpseclib_mcrypt_enc_self_test($td);
     }
-
     function mcrypt_module_get_supported_key_sizes($algorithm, $lib_dir = '')
     {
         return phpseclib_mcrypt_module_get_supported_key_sizes($algorithm, $lib_dir);
     }
-
     function mcrypt_encrypt($cipher, $key, $data, $mode, $iv = null)
     {
         return phpseclib_mcrypt_encrypt($cipher, $key, $data, $mode, $iv);
     }
-
     function mcrypt_module_get_algo_block_size($algorithm, $lib_dir = '')
     {
         return phpseclib_mcrypt_module_get_algo_block_size($algorithm, $lib_dir);
     }
-
     function mcrypt_get_block_size($cipher, $mode = '')
     {
         return phpseclib_mcrypt_get_block_size($cipher, $mode);
     }
-
     function mcrypt_get_cipher_name($cipher)
     {
         return phpseclib_mcrypt_get_cipher_name($cipher);
     }
-
     function mcrypt_get_key_size($cipher, $mode = false)
     {
         return phpseclib_mcrypt_get_key_size($cipher, $mode);
     }
-
     function mcrypt_get_iv_size($cipher, $mode)
     {
         return phpseclib_mcrypt_get_iv_size($cipher, $mode);
     }
-
     function mcrypt_module_get_algo_key_size($algorithm, $lib_dir = '')
     {
         return phpseclib_mcrypt_module_get_algo_key_size($algorithm, $lib_dir);
     }
-
     function mcrypt_enc_get_supported_key_sizes(Base $td)
     {
         return phpseclib_mcrypt_enc_get_supported_key_sizes($td);
     }
-
     function mcrypt_module_is_block_algorithm_mode($mode, $lib_dir = '')
     {
         return phpseclib_mcrypt_module_is_block_algorithm_mode($mode, $lib_dir);
     }
-
-    function mcrypt_module_is_block_algorithm($algorithm, $lib_dir =  '')
+    function mcrypt_module_is_block_algorithm($algorithm, $lib_dir = '')
     {
         return phpseclib_mcrypt_module_is_block_algorithm($algorithm, $lib_dir);
     }
-
     function mcrypt_module_is_block_mode($mode, $lib_dir = '')
     {
         return phpseclib_mcrypt_module_is_block_mode($mode, $lib_dir);
     }
-
     function mcrypt_module_self_test($algorithm, $lib_dir = '')
     {
         return phpseclib_mcrypt_module_self_test($algorithm, $lib_dir);
     }
-
     function mcrypt_decrypt($cipher, $key, $data, $mode, $iv = null)
     {
         return phpseclib_mcrypt_decrypt($cipher, $key, $data, $mode, $iv);
     }
-
     //if (!in_array('mcrypt.*', stream_get_filters()) {
     stream_filter_register('mcrypt.*', 'phpseclib_mcrypt_filter');
     stream_filter_register('mdecrypt.*', 'phpseclib_mcrypt_filter');
