@@ -983,7 +983,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     public function testMcryptGenericMode($modeName, $validMode)
     {
         if (!$validMode) {
-            return;
+            $this->markTestSkipped('Invalid mode — encryption comparison not applicable');
         }
         $key = str_repeat('a', 16);
         $iv = str_repeat('b', 16);
@@ -1161,11 +1161,25 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
             parent::setExpectedException($name, $message, $code);
             return;
         }
+
         switch ($name) {
-            case 'PHPUnit_Framework_Error_Notice':
             case 'PHPUnit_Framework_Error_Warning':
-                $name = str_replace('_', '\\', $name);
+            case \PHPUnit\Framework\Error\Warning::class:
+                $this->expectWarning();
+                if ($message !== null && $message !== '') {
+                    $this->expectWarningMessage($message);
+                }
+                return;
+
+            case 'PHPUnit_Framework_Error_Notice':
+            case \PHPUnit\Framework\Error\Notice::class:
+                $this->expectNotice();
+                if ($message !== null && $message !== '') {
+                    $this->expectNoticeMessage($message);
+                }
+                return;
         }
+
         $this->expectException($name);
         if (!empty($message)) {
             $this->expectExceptionMessage($message);
