@@ -1176,7 +1176,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     }
 
     // assertIsArray was not introduced until PHPUnit 8
-    public static function assertIsArray($actual, $message = '')
+    public static function assertIsArray($actual, string $message = ''): void
     {
         if (method_exists('\PHPUnit\Framework\TestCase', 'assertIsArray')) {
             parent::assertIsArray($actual, $message);
@@ -1187,7 +1187,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     }
 
     // assertIsString was not introduced until PHPUnit 8
-    public static function assertIsString($actual, $message = '')
+    public static function assertIsString($actual, string $message = ''): void
     {
         if (method_exists('\PHPUnit\Framework\TestCase', 'assertIsString')) {
             parent::assertIsString($actual, $message);
@@ -1198,7 +1198,7 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     }
 
     // assertContains is deprecated for strings in PHPUnit 8
-    public static function assertStringContainsString($needle, $haystack, $message = '')
+    public static function assertStringContainsString(string $needle, string $haystack, string $message = ''): void
     {
         if (method_exists('\PHPUnit\Framework\TestCase', 'assertStringContainsString')) {
             parent::assertStringContainsString($needle, $haystack, $message);

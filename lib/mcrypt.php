@@ -939,7 +939,7 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
         // PHP 5.6 made mcrypt_encrypt() a lot less tolerant of bad input but it neglected to change
         // anything about mcrypt_generic(). and despite the changes insufficiently long plaintext
         // is still accepted.
-        $keyLen = strlen($key);
+        $keyLen = phpseclib_strlen($key);
         $sizes = phpseclib_mcrypt_module_get_supported_key_sizes($cipher);
         if (count($sizes) && !in_array($keyLen, $sizes)) {
             trigger_error(
@@ -971,9 +971,9 @@ if (!function_exists('phpseclib_mcrypt_list_algorithms')) {
                 );
                 return false;
             }
-            if (strlen($iv) != $iv_size) {
+            if (phpseclib_strlen($iv) != $iv_size) {
                 trigger_error(
-                    'mcrypt_' . $op . '(): Received initialization vector of size ' . strlen($iv) . ', but size ' . $iv_size . ' is required for this encryption mode',
+                    'mcrypt_' . $op . '(): Received initialization vector of size ' . phpseclib_strlen($iv) . ', but size ' . $iv_size . ' is required for this encryption mode',
                     E_USER_WARNING
                 );
                 return false;
