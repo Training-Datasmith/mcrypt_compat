@@ -4,6 +4,48 @@ declare(strict_types=1);
 
 class MCryptCompatTest extends PHPUnit\Framework\TestCase
 {
+    /** @var array{type: string, levels: list<int>, message: ?string}|null */
+    private ?array $phpErrorExpectation = null;
+
+    private bool $phpErrorCaught = false;
+
+    private ?string $phpErrorCaughtMessage = null;
+
+    private bool $phpErrorHandlerRegistered = false;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->phpErrorExpectation = null;
+        $this->phpErrorCaught = false;
+        $this->phpErrorCaughtMessage = null;
+        $this->phpErrorHandlerRegistered = false;
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->phpErrorHandlerRegistered) {
+            restore_error_handler();
+            $this->phpErrorHandlerRegistered = false;
+        }
+
+        if ($this->phpErrorExpectation !== null) {
+            $this->assertTrue(
+                $this->phpErrorCaught,
+                sprintf('Expected PHP %s was not triggered', $this->phpErrorExpectation['type'])
+            );
+
+            if ($this->phpErrorExpectation['message'] !== null) {
+                $this->assertStringContainsString(
+                    $this->phpErrorExpectation['message'],
+                    $this->phpErrorCaughtMessage ?? ''
+                );
+            }
+        }
+
+        parent::tearDown();
+    }
+
     public function testAlgorithmList()
     {
         $this->assertIsArray(phpseclib_mcrypt_list_algorithms());
@@ -1165,18 +1207,12 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
         switch ($name) {
             case 'PHPUnit_Framework_Error_Warning':
             case \PHPUnit\Framework\Error\Warning::class:
-                $this->expectWarning();
-                if ($message !== null && $message !== '') {
-                    $this->expectWarningMessage($message);
-                }
+                $this->expectPhpError('warning', $message);
                 return;
 
             case 'PHPUnit_Framework_Error_Notice':
             case \PHPUnit\Framework\Error\Notice::class:
-                $this->expectNotice();
-                if ($message !== null && $message !== '') {
-                    $this->expectNoticeMessage($message);
-                }
+                $this->expectPhpError('notice', $message);
                 return;
         }
 
@@ -1187,6 +1223,45 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
         if (!empty($code)) {
             $this->expectExceptionCode($code);
         }
+    }
+
+    /**
+     * @param 'warning'|'notice' $type
+     */
+    private function expectPhpError(string $type, ?string $message): void
+    {
+        $levels = $type === 'warning'
+            ? [E_WARNING, E_USER_WARNING]
+            : [E_NOTICE, E_USER_NOTICE];
+
+        $this->phpErrorExpectation = [
+            'type' => $type,
+            'levels' => $levels,
+            'message' => $message !== '' ? $message : null,
+        ];
+        $this->phpErrorCaught = false;
+        $this->phpErrorCaughtMessage = null;
+
+        if (!$this->phpErrorHandlerRegistered) {
+            set_error_handler([$this, 'handleExpectedPhpError'], E_ALL);
+            $this->phpErrorHandlerRegistered = true;
+        }
+    }
+
+    public function handleExpectedPhpError(int $errno, string $errstr, string $errfile, int $errline): bool
+    {
+        if ($this->phpErrorExpectation === null) {
+            return false;
+        }
+
+        if (!in_array($errno, $this->phpErrorExpectation['levels'], true)) {
+            return false;
+        }
+
+        $this->phpErrorCaught = true;
+        $this->phpErrorCaughtMessage = $errstr;
+
+        return true;
     }
 
     // assertIsArray was not introduced until PHPUnit 8
