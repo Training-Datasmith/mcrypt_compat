@@ -926,6 +926,26 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
         $this->assertEquals('69c48f0bce2c81abd64bbab839080574', bin2hex($result));
     }
 
+    /**
+     * Expected warning for wrong IV length on 3DES ECB via mcrypt_generic_init (ext only).
+     *
+     * PHP 7.x native mcrypt accepts wrong IV silently; PECL mcrypt on PHP 8+ warns again.
+     *
+     * @return false|string
+     */
+    private static function expectedExtMcryptEcbGenericIvWarning(int $suppliedLength, int $neededLength)
+    {
+        if (PHP_VERSION_ID >= 70000 && PHP_VERSION_ID < 80000) {
+            return false;
+        }
+
+        return sprintf(
+            'Iv size incorrect; supplied length: %d, needed: %d',
+            $suppliedLength,
+            $neededLength
+        );
+    }
+
     public function providerForIVSizeChecks()
     {
         $tests = [
@@ -944,8 +964,8 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
             // here comes a known, but acceptable difference between the ext and phpseclib:
             [ 'compat', MCRYPT_3DES, MCRYPT_MODE_ECB, 'generic', 0, '44448888', 8, false ],
             [ 'compat', MCRYPT_3DES, MCRYPT_MODE_ECB, 'generic', 4, '44448888', 8, false ],
-            [ 'ext', MCRYPT_3DES, MCRYPT_MODE_ECB, 'generic', 0, '44448888', 8, PHP_VERSION_ID >= 70000 ? false : 'Iv size incorrect; supplied length: 0, needed: 8' ],
-            [ 'ext', MCRYPT_3DES, MCRYPT_MODE_ECB, 'generic', 4, '44448888', 8, PHP_VERSION_ID >= 70000 ? false : 'Iv size incorrect; supplied length: 4, needed: 8' ],
+            [ 'ext', MCRYPT_3DES, MCRYPT_MODE_ECB, 'generic', 0, '44448888', 8, self::expectedExtMcryptEcbGenericIvWarning(0, 8) ],
+            [ 'ext', MCRYPT_3DES, MCRYPT_MODE_ECB, 'generic', 4, '44448888', 8, self::expectedExtMcryptEcbGenericIvWarning(4, 8) ],
         ];
         if (PHP_VERSION_ID >= 56000) {
             $tests += [
@@ -1020,13 +1040,10 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
     }
 
     /**
-     * @dataProvider mcryptBlockModuleNameProvider
+     * @dataProvider mcryptGenericModeEncryptProvider
      */
-    public function testMcryptGenericMode($modeName, $validMode)
+    public function testMcryptGenericMode($modeName)
     {
-        if (!$validMode) {
-            $this->markTestSkipped('Invalid mode — encryption comparison not applicable');
-        }
         $key = str_repeat('a', 16);
         $iv = str_repeat('b', 16);
         $plaintext = str_repeat('c', 16);
@@ -1156,6 +1173,19 @@ class MCryptCompatTest extends PHPUnit\Framework\TestCase
             ['rc2', 'cbc', 'RC2'],
             ['tripledes', 'cbc', 'TRIPLEDES'],
             ['arcfour', 'stream', 'ARCFOUR'],
+        ];
+    }
+
+    public function mcryptGenericModeEncryptProvider()
+    {
+        return [
+            ['cbc'],
+            ['ctr'],
+            ['ecb'],
+            ['cfb'],
+            ['ofb'],
+            ['ncfb'],
+            ['nofb'],
         ];
     }
 
